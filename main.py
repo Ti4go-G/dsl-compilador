@@ -4,9 +4,9 @@ Script principal - Gera SQL e JavaScript a partir do .dsl
 
 import sys
 from pathlib import Path
-from dsl_parser import parse_dsl
-from sql_generator import generate_sql
-from js_generator import generate_js_module
+from src.dsl_parser import parse_dsl
+from src.sql_generator import generate_sql
+from src.js_generator import generate_js_module
 
 
 def processar_dsl(arquivo: str):
@@ -50,14 +50,14 @@ def processar_dsl(arquivo: str):
         sql_output.append(f"-- Tabela: {nome}\n{sql}\n")
     
     # Salvar SQL
-    arquivo_sql = caminho.with_suffix('.sql')
+    arquivo_sql = Path('output') / f"{caminho.stem}.sql"
     arquivo_sql.write_text(
         "-- SQL gerado automaticamente\n"
         f"-- Fonte: {caminho.name}\n\n" +
         "".join(sql_output),
         encoding='utf-8'
     )
-    print(f"[OK] SQL salvo em: {arquivo_sql.name}")
+    print(f"[OK] SQL salvo em: {arquivo_sql}")
     
     # ========== GERAR JAVASCRIPT ==========
     print("\n" + "=" * 70)
@@ -66,11 +66,11 @@ def processar_dsl(arquivo: str):
     
     js_code = generate_js_module(forms)
     
-    arquivo_js = caminho.with_suffix('.js')
+    arquivo_js = Path('output') / f"{caminho.stem}.js"
     arquivo_js.write_text(js_code, encoding='utf-8')
     
     print(f"\n{js_code[:500]}...")
-    print(f"\n[OK] JavaScript salvo em: {arquivo_js.name}")
+    print(f"\n[OK] JavaScript salvo em: {arquivo_js}")
 
 
 def main():
@@ -78,12 +78,12 @@ def main():
     if len(sys.argv) > 1:
         arquivo = sys.argv[1]
     else:
-        # Procura arquivo .dsl
-        arquivos_dsl = list(Path('.').glob('*.dsl'))
+        # Procura arquivo .dsl na pasta input
+        arquivos_dsl = list(Path('input').glob('*.dsl'))
         
         if not arquivos_dsl:
-            print("[ERRO] Nenhum arquivo .dsl encontrado")
-            print("\nUso: python main.py [arquivo.dsl]")
+            print("[ERRO] Nenhum arquivo .dsl encontrado na pasta input/")
+            print("\nUso: python main.py [input/arquivo.dsl]")
             return
         
         arquivo = arquivos_dsl[0]
