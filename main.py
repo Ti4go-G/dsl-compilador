@@ -4,7 +4,8 @@ Script principal - Gera SQL e JavaScript a partir do .dsl
 
 import sys
 from pathlib import Path
-from dsl_validator import FormDSL
+from dsl_parser import parse_dsl
+from sql_generator import generate_sql
 from js_generator import generate_js_module
 
 
@@ -22,7 +23,7 @@ def processar_dsl(arquivo: str):
     
     try:
         dsl_code = caminho.read_text(encoding='utf-8')
-        form = FormDSL(dsl_code)
+        forms = parse_dsl(dsl_code)
     except SyntaxError as e:
         print(f"\n[ERRO DE SINTAXE] Ocorreu um erro ao ler o arquivo DSL:")
         print(f"{e}")
@@ -32,9 +33,8 @@ def processar_dsl(arquivo: str):
         return
     
     # Listar formulários
-    formularios = form.list_forms()
-    print(f"\n[OK] {len(formularios)} formulário(s) encontrado(s):")
-    for nome in formularios:
+    print(f"\n[OK] {len(forms)} formulário(s) encontrado(s):")
+    for nome in forms:
         print(f"  - {nome}")
     
     # ========== GERAR SQL ==========
@@ -43,8 +43,8 @@ def processar_dsl(arquivo: str):
     print("=" * 70)
     
     sql_output = []
-    for nome in formularios:
-        sql = form.get_sql(nome)
+    for nome, fields in forms.items():
+        sql = generate_sql(nome.lower(), fields)
         print(f"\n-- Tabela: {nome}")
         print(sql)
         sql_output.append(f"-- Tabela: {nome}\n{sql}\n")
@@ -64,7 +64,7 @@ def processar_dsl(arquivo: str):
     print("[INFO] JAVASCRIPT GERADO")
     print("=" * 70)
     
-    js_code = generate_js_module(form.forms)
+    js_code = generate_js_module(forms)
     
     arquivo_js = caminho.with_suffix('.js')
     arquivo_js.write_text(js_code, encoding='utf-8')

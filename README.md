@@ -73,12 +73,12 @@ O projeto é modular, separado em responsabilidades específicas:
 
 ### 2. `dsl_parser.py` (Interpretador)
 Responsável por ler a sintaxe da DSL e transformá-la em estrutura de dados.
-- **Tecnologia**: Usa Expressões Regulares (`regex`) para identificar formulários e campos.
+- **Tecnologia**: Usa **ANTLR** para análise léxica e sintática.
 - **Classe `Field`**: Uma `dataclass` que armazena metadados de cada campo (nome, tipo, validações).
 - **Funcionamento**:
-    - Remove comentários.
-    - Identifica blocos `formulario { ... }`.
-    - Extrai definições de `campo` e seus parâmetros `(min, max)`.
+    - Usa a gramática definida em `Formularios.g4`.
+    - Percorre a árvore sintática gerada pelo ANTLR usando um `Listener`.
+    - Extrai definições de `campo` e seus parâmetros.
 
 ### 3. `sql_generator.py` (Gerador de Banco de Dados)
 Converte as definições da DSL em comandos DDL (Data Definition Language) para MySQL/MariaDB.
