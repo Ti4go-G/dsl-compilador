@@ -1,7 +1,3 @@
-"""
-Script principal - Gera SQL e JavaScript a partir do .dsl
-"""
-
 import sys
 from pathlib import Path
 from src.dsl_parser import parse_dsl
@@ -12,7 +8,6 @@ from src.js_generator import generate_js_module
 def processar_dsl(arquivo: str):
     """Processa arquivo .dsl e gera SQL + JavaScript"""
     
-    # Ler arquivo
     caminho = Path(arquivo)
     if not caminho.exists():
         print(f"[ERRO] Arquivo não encontrado: {arquivo}")
@@ -32,12 +27,10 @@ def processar_dsl(arquivo: str):
         print(f"\n[ERRO INESPERADO] {e}")
         return
     
-    # Listar formulários
     print(f"\n[OK] {len(forms)} formulário(s) encontrado(s):")
     for nome in forms:
         print(f"  - {nome}")
     
-    # ========== GERAR SQL ==========
     print("\n" + "=" * 70)
     print("[INFO] SQL GERADO")
     print("=" * 70)
@@ -49,7 +42,6 @@ def processar_dsl(arquivo: str):
         print(sql)
         sql_output.append(f"-- Tabela: {nome}\n{sql}\n")
     
-    # Salvar SQL
     arquivo_sql = Path('output') / f"{caminho.stem}.sql"
     arquivo_sql.write_text(
         "-- SQL gerado automaticamente\n"
@@ -59,7 +51,6 @@ def processar_dsl(arquivo: str):
     )
     print(f"[OK] SQL salvo em: {arquivo_sql}")
     
-    # ========== GERAR JAVASCRIPT ==========
     print("\n" + "=" * 70)
     print("[INFO] JAVASCRIPT GERADO")
     print("=" * 70)
@@ -78,7 +69,6 @@ def main():
     if len(sys.argv) > 1:
         arquivo = sys.argv[1]
     else:
-        # Procura arquivo .dsl na pasta input
         arquivos_dsl = list(Path('input').glob('*.dsl'))
         
         if not arquivos_dsl:
