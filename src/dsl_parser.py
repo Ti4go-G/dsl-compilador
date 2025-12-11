@@ -2,7 +2,6 @@ from dataclasses import dataclass
 from typing import Optional
 from antlr4 import *
 
-# Importação direta (vai falhar se não tiver gerado os arquivos, o que é correto)
 from .antlr_generated.FormulariosLexer import FormulariosLexer
 from .antlr_generated.FormulariosParser import FormulariosParser
 from .antlr_generated.FormulariosListener import FormulariosListener
@@ -34,7 +33,6 @@ class FormLoader(FormulariosListener):
     def exitCampo(self, ctx):
         name = ctx.ID().getText()
         
-        # Tipo e parametros
         type_ctx = ctx.tipo()
         field_type = type_ctx.ID().getText()
         
@@ -45,7 +43,6 @@ class FormLoader(FormulariosListener):
             if len(params) > 1:
                 max_val = int(params[1].getText())
 
-        # Flags
         flags_text = ctx.flags().getText()
         required = 'obrigatorio' in flags_text
         unique = 'unico' in flags_text
@@ -64,10 +61,8 @@ def parse_dsl(dsl_code: str) -> dict:
     stream = CommonTokenStream(lexer)
     parser = FormulariosParser(stream)
     
-    # Inicia o parse pela regra raiz 'arquivo'
     tree = parser.arquivo()
     
-    # Percorre a árvore
     loader = FormLoader()
     walker = ParseTreeWalker()
     walker.walk(loader, tree)

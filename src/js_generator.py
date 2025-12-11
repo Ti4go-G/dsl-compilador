@@ -1,10 +1,4 @@
-"""
-Gerador de código JavaScript com validações
-"""
-
-
 def generate_js_validator(form_name: str, fields: list) -> str:
-    """Gera código JavaScript para validação de formulário"""
     
     js = f"// Validador para {form_name}\n"
     js += f"function validate{form_name}(data) {{\n"
@@ -13,7 +7,6 @@ def generate_js_validator(form_name: str, fields: list) -> str:
     for field in fields:
         js += f"  // Validação: {field.name}\n"
         
-        # Campo obrigatório
         if field.required:
             js += f"  if (!data.{field.name}) {{\n"
             js += f"    errors.push('{field.name} é obrigatório');\n"
@@ -97,12 +90,10 @@ def generate_js_module(forms: dict) -> str:
     js += " * Não editar manualmente\n"
     js += " */\n\n"
     
-    # Gera validador para cada formulário
     for form_name, fields in forms.items():
         js += generate_js_validator(form_name, fields)
         js += "\n\n"
     
-    # Exporta as funções
     js += "// Exportar validadores\n"
     if len(forms) > 0:
         js += "module.exports = {\n"
