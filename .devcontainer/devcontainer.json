@@ -1,10 +1,16 @@
 {
-  "name": "Compilador DSL",
+  "name": "Compilador EasyForm",
   "image": "mcr.microsoft.com/devcontainers/python:3.10",
+  "features": {
+    "ghcr.io/devcontainers/features/java:1": {
+      "version": "17",
+      "installGradle": false,
+      "installMaven": false
+    }
+  },
   "postCreateCommand": "pip install -r requirements.txt",
   "customizations": {
     "vscode": {
-      "settings": {},
       "extensions": [
         "ms-python.python",
         "mike-lischke.vscode-antlr4"
