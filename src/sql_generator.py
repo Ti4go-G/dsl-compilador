@@ -9,30 +9,34 @@ SQL_TYPES = {
     'textolongo': 'TEXT'
 }
 
-
 def generate_sql(table_name: str, fields: list) -> str:
     """Gera CREATE TABLE a partir dos campos"""
-    lines = [f"CREATE TABLE {table_name} (", "    id INT AUTO_INCREMENT PRIMARY KEY"]
+    
+    sql = f"CREATE TABLE {table_name} (\n"
+    
+    columns = ["    id INT AUTO_INCREMENT PRIMARY KEY"]
     
     for field in fields:
-        lines.append(_field_to_sql(field))
+        columns.append(_field_to_sql(field))
     
     for field in fields:
         if field.unique:
-            lines.append(f"    UNIQUE KEY unique_{field.name} ({field.name})")
+            columns.append(f"    UNIQUE KEY unique_{field.name} ({field.name})")
     
-    lines.append("    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP")
-    lines.append("    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP")
+    columns.append("    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP")
+    columns.append("    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP")
     
-    return ",\n".join(lines) + "\n);\n"
-
+    sql += ",\n".join(columns)
+    sql += "\n);\n"
+    
+    return sql
 
 def _field_to_sql(field) -> str:
     """Converte um campo para definição SQL"""
     sql_type = SQL_TYPES.get(field.field_type, 'VARCHAR')
     
     if sql_type == 'VARCHAR':
-        size = field.max_val or 255
+        size = int(field.max_val) if field.max_val else 255
         sql_type = f"VARCHAR({size})"
     
     sql = f"    {field.name} {sql_type}"

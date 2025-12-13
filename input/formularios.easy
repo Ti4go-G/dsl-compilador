@@ -1,5 +1,3 @@
-# Exemplo de arquivo DSL para formulários de cadastro
-
 # Formulário de cadastro de usuário
 formulario Usuario {
     campo nome: texto(3, 100) obrigatorio
@@ -32,4 +30,9 @@ formulario Produto {
     campo categoria_id: inteiro(1, 999999) obrigatorio
     campo codigo_barras: texto(13, 13) unico
     campo ativo: booleano obrigatorio
+}
+
+formulario Login {
+    campo email: email msg "Por favor, insira um e-mail corporativo válido" obrigatorio
+    campo senha: texto(6, 20) msg "A senha deve ter entre 6 e 20 caracteres" obrigatorio
 }

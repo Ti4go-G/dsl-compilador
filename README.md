@@ -1,94 +1,137 @@
-# DSL de Validação e Geração de SQL
+# 📝 EasyForm - DSL de Geração de Formulários
 
-Ferramenta completa para definir formulários, gerar tabelas SQL e validadores JavaScript automaticamente.
+Este projeto implementa o compilador da **EasyForm**, uma **Linguagem de Domínio Específico (DSL)** focada na definição de formulários. O objetivo é automatizar a criação de código repetitivo no desenvolvimento Fullstack.
 
-## 🚀 Como Usar
+A partir de uma sintaxe simples e legível, o compilador gera automaticamente:
+1.  **Frontend:** Código JavaScript para validação de dados.
+2.  **Backend:** Scripts SQL (`CREATE TABLE`) para criação do banco de dados.
 
-1. Edite o arquivo `formularios.dsl` com suas definições
-2. Execute o script principal:
+## 👥 Equipe
+*   **Tiago Gaspar**
+*   **Weslley Mattheus**
 
-```powershell
+---
+
+## 💡 Motivação
+No desenvolvimento de sistemas corporativos, a criação de telas de cadastro (CRUDs) é uma tarefa repetitiva e propensa a erros. Frequentemente, as regras de validação (como "campo obrigatório" ou "tamanho máximo") precisam ser duplicadas manualmente no Frontend e no Backend.
+
+*   **Problema:** Se uma regra muda, o desenvolvedor precisa lembrar de alterar em dois lugares diferentes (JS e SQL).
+*   **Solução:** A **EasyForm** centraliza a definição em um único arquivo `.easy`. O compilador garante a consistência entre as camadas e economiza tempo de codificação.
+
+---
+
+## 🚀 Como Executar o Projeto
+
+### Pré-requisitos
+*   **Python 3.8+** instalado.
+*   **Java (JDK 11+)** instalado (Necessário apenas para gerar os arquivos do ANTLR).
+
+### 1. Instalação das Dependências
+No terminal, instale a biblioteca de runtime do ANTLR para Python:
+
+```bash
+pip install antlr4-python3-runtime
+```
+
+### 2. Geração do Parser (ANTLR)
+Antes de rodar o projeto pela primeira vez (ou se alterar a gramática), é necessário gerar os arquivos Python a partir do arquivo `.g4`.
+
+Certifique-se de que o arquivo `antlr-4.13.2-complete.jar` está na raiz do projeto e execute:
+
+```bash
+java -jar antlr-4.13.2-complete.jar -Dlanguage=Python3 -visitor -o src/antlr_generated grammar/Formularios.g4
+```
+
+### 3. Compilação
+Crie ou edite o arquivo com a extensão `.easy` na pasta `input/` (ex: `input/meu_projeto.easy`) e adicione suas definições.
+
+Em seguida, execute o compilador:
+
+```bash
 python main.py
 ```
 
-Isso irá gerar automaticamente:
-- `formularios.sql`: Script SQL para criar as tabelas
-- `formularios.js`: Módulo JavaScript com funções de validação
+Os arquivos gerados estarão na pasta `output`:
+*   `output/formularios.sql`
+*   `output/formularios.js`
 
-## 📝 Sintaxe da DSL
+---
 
-A sintaxe é simples e declarativa, agora em português:
+## 📘 Guia da Linguagem EasyForm
 
-```dsl
+A **EasyForm** utiliza uma estrutura declarativa simples.
+
+### Estrutura Básica
+```easy
 formulario NomeDoFormulario {
-    campo nome_campo: tipo(min, max) flags
+    campo nome_do_campo: tipo(parametros) flags
 }
 ```
 
-### Tipos Suportados
+### Tipos de Dados Suportados
+| Tipo EasyForm | Parâmetros | Tradução SQL | Validação JS |
+| :--- | :--- | :--- | :--- |
+| `texto` | `(min, max)` | `VARCHAR(max)` | Tamanho min/max |
+| `inteiro` | `(min, max)` | `INT` | Valor min/max |
+| `decimal` | `(min, max)` | `DECIMAL(10,2)` | Valor min/max |
+| `email` | - | `VARCHAR(255)` | Regex de E-mail |
+| `booleano`| - | `BOOLEAN` | - |
+| `data` | - | `DATE` | - |
 
-| Tipo | Descrição | Parâmetros `(min, max)` |
-|------|-----------|-------------------------|
-| `texto` | Texto curto | Comprimento min/max |
-| `textolongo` | Texto longo | - |
-| `inteiro` | Número inteiro | Valor min/max |
-| `decimal` | Número decimal | Valor min/max |
-| `email` | E-mail válido | - |
-| `booleano` | Verdadeiro/Falso | - |
-| `data` | Data | - |
+### Flags (Opcionais)
+*   `obrigatorio`: Adiciona `NOT NULL` no SQL e verificação de preenchimento no JS.
+*   `unico`: Adiciona restrição `UNIQUE` no SQL.
 
-### Flags
+---
 
-- `obrigatorio`: Torna o campo obrigatório
-- `unico`: Cria índice único no banco de dados (SQL)
+## 💻 Exemplo de Código
 
-## 💡 Exemplo Completo
-
-```dsl
+### Entrada (`input/formularios.easy`)
+```easy
 formulario Usuario {
     campo nome: texto(3, 100) obrigatorio
     campo email: email unico obrigatorio
     campo idade: inteiro(18, 120)
-    campo ativo: booleano obrigatorio
-}
-
-formulario Produto {
-    campo nome: texto(3, 200) obrigatorio
-    campo preco: decimal(0, 99999) obrigatorio
 }
 ```
 
-## 📂 Estrutura do Projeto e Explicação do Código
+### Saída Gerada
 
-O projeto é modular, separado em responsabilidades específicas:
+**SQL (`output/formularios.sql`):**
+```sql
+CREATE TABLE usuario (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    nome VARCHAR(100) NOT NULL,
+    email VARCHAR(255) NOT NULL UNIQUE,
+    idade INT
+);
+```
 
-### 1. `main.py` (Orquestrador)
-É o ponto de entrada da aplicação.
-- **Função**: Lê o arquivo `.dsl`, chama o parser e distribui os dados para os geradores.
-- **Fluxo**:
-    1. Carrega o arquivo `.dsl`.
-    2. Usa `dsl_parser.py` para converter o texto em objetos Python.
-    3. Gera SQL usando `sql_generator.py`.
-    4. Gera JavaScript usando `js_generator.py`.
+**JavaScript (`output/formularios.js`):**
+```javascript
+export function validateUsuario(data) {
+    const errors = [];
+    if (!data.nome) errors.push('nome é obrigatório');
+    if (data.nome && data.nome.length < 3) errors.push('nome deve ter no mínimo 3 caracteres');
+    // ... validações de email e idade ...
+    return errors;
+}
+```
 
-### 2. `dsl_parser.py` (Interpretador)
-Responsável por ler a sintaxe da DSL e transformá-la em estrutura de dados.
-- **Tecnologia**: Usa **ANTLR** para análise léxica e sintática.
-- **Classe `Field`**: Uma `dataclass` que armazena metadados de cada campo (nome, tipo, validações).
-- **Funcionamento**:
-    - Usa a gramática definida em `Formularios.g4`.
-    - Percorre a árvore sintática gerada pelo ANTLR usando um `Listener`.
-    - Extrai definições de `campo` e seus parâmetros.
+---
 
-### 3. `sql_generator.py` (Gerador de Banco de Dados)
-Converte as definições da DSL em comandos DDL (Data Definition Language) para MySQL/MariaDB.
-- **Mapeamento**: Converte tipos da DSL para tipos SQL (ex: `texto` -> `VARCHAR`, `inteiro` -> `INT`).
-- **Automação**: Adiciona automaticamente:
-    - `id`: Chave primária auto-incremento.
-    - `created_at` e `updated_at`: Timestamps para auditoria.
-    - `UNIQUE KEY`: Para campos marcados com a flag `unico`.
+## 📂 Estrutura de Arquivos
 
-### 4. `js_generator.py` (Frontend)
-Gera código para o navegador (Client-side).
-- **Validação JS**: Cria funções `validateNomeFormulario(data)` que retornam `{ valid: boolean, errors: [] }`.
-    - Implementa as mesmas regras de validação do Python (tamanho, tipo, regex de email).
+```text
+.
+├── main.py                # Orquestrador do compilador
+├── grammar/               
+│   └── Formularios.g4     # Definição formal da gramática (ANTLR)
+├── src/
+│   ├── easy_parser.py     # Listener que transforma a Árvore Sintática em Objetos
+│   ├── sql_generator.py   # Backend: Gera código SQL
+│   ├── js_generator.py    # Backend: Gera código JavaScript
+│   └── antlr_generated/   # (Gerado) Lexer e Parser do ANTLR
+├── input/                 # Arquivos fonte (.easy)
+└── output/                # Arquivos compilados (.sql, .js)
+```
