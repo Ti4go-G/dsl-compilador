@@ -51,8 +51,8 @@ class FormLoader(FormulariosListener):
         field = Field(name, field_type, min_val, max_val, required, unique, custom_error)
         self.forms[self.current_form_name].append(field)
 
-def parse_dsl(dsl_code: str) -> dict:
-    input_stream = InputStream(dsl_code)
+def parse_easyform(easy_code: str) -> dict:
+    input_stream = InputStream(easy_code)
     lexer = FormulariosLexer(input_stream)
     stream = CommonTokenStream(lexer)
     parser = FormulariosParser(stream)

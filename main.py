@@ -1,11 +1,11 @@
 import sys
 from pathlib import Path
-from src.dsl_parser import parse_dsl
+from src.easy_parser import parse_easyform
 from src.sql_generator import generate_sql
 from src.js_generator import generate_js_module
 
-def processar_dsl(arquivo: str):
-    """Processa arquivo .dsl e gera SQL + JavaScript"""
+def processar_easyform(arquivo: str):
+    """Processa arquivo .easy e gera SQL + JavaScript"""
     caminho = Path(arquivo)
     
     if not caminho.exists():
@@ -16,10 +16,10 @@ def processar_dsl(arquivo: str):
     print("=" * 70)
     
     try:
-        dsl_code = caminho.read_text(encoding='utf-8')
-        forms = parse_dsl(dsl_code)
+        easy_code = caminho.read_text(encoding='utf-8')
+        forms = parse_easyform(easy_code)
     except SyntaxError as e:
-        print(f"\n[ERRO DE SINTAXE] Ocorreu um erro ao ler o arquivo DSL:")
+        print(f"\n[ERRO DE SINTAXE] Ocorreu um erro ao ler o arquivo EasyForm:")
         print(f"{e}")
         return
     except Exception as e:
@@ -74,18 +74,18 @@ def main():
         if not pasta_input.exists():
             pasta_input.mkdir()
             print("[AVISO] Pasta 'input/' não existia e foi criada.")
-            print("Por favor, coloque seu arquivo .dsl dentro dela e tente novamente.")
+            print("Por favor, coloque seu arquivo .easy dentro dela e tente novamente.")
             return
-        arquivos_dsl = list(Path('input').glob('*.dsl'))
+        arquivos_easy = list(Path('input').glob('*.easy'))
         
-        if not arquivos_dsl:
+        if not arquivos_easy:
             print("[ERRO] A pasta 'input/' está vazia.")
-            print("Crie um arquivo (ex: teste.dsl) dentro dela.")
+            print("Crie um arquivo (ex: teste.easy) dentro dela.")
             return
         
-        arquivo = arquivos_dsl[0]
+        arquivo = arquivos_easy[0]
     
-    processar_dsl(arquivo)
+    processar_easyform(arquivo)
     
     print("\n" + "=" * 70)
     print("[OK] GERAÇÃO CONCLUÍDA")
