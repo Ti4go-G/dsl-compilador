@@ -1,94 +1,37 @@
-# DSL de Validação e Geração de SQL
+# DSL de Geração de Formulários (Fullstack)
 
-Ferramenta completa para definir formulários, gerar tabelas SQL e validadores JavaScript automaticamente.
+## 👥 Equipe
+* Tiago Gaspar
+* Weslley Mattheus
 
-## 🚀 Como Usar
+## 💡 Motivação
+No desenvolvimento de sistemas corporativos, a criação de telas de cadastro (CRUDs) é uma tarefa repetitiva e propensa a erros. Frequentemente, as regras de validação (como "campo obrigatório" ou "tamanho máximo") precisam ser duplicadas manualmente no Frontend (JavaScript) e no Backend (SQL/Banco de Dados).
+**Problema:** Se uma regra muda, o desenvolvedor precisa lembrar de alterar em dois lugares diferentes.
+**Solução:** Nossa DSL centraliza a definição do formulário em um único arquivo `.dsl`. O compilador lê essa definição e gera automaticamente tanto o código de validação JavaScript quanto o script de criação de tabelas SQL, garantindo consistência e economizando tempo.
 
-1. Edite o arquivo `formularios.dsl` com suas definições
-2. Execute o script principal:
+## 📖 Descrição da Linguagem
+A linguagem foi projetada para ser declarativa e legível, assemelhando-se a uma estrutura JSON simplificada ou a definição de structs em C, mas focada em regras de negócio.
+Exemplo: `campo email: texto(10, 100) obrigatorio` define, em uma linha, o nome, tipo, limites de caracteres e obrigatoriedade.
 
-```powershell
-python main.py
-```
+# DSL de Formulários - Compilador
 
-Isso irá gerar automaticamente:
-- `formularios.sql`: Script SQL para criar as tabelas
-- `formularios.js`: Módulo JavaScript com funções de validação
+Este projeto implementa um compilador para uma **Linguagem de Domínio Específico (DSL)** focada na definição de formulários. A partir de uma sintaxe simples e legível, o compilador gera automaticamente:
 
-## 📝 Sintaxe da DSL
+1.  **Frontend:** Código JavaScript para validação de dados.
+2.  **Backend:** Scripts SQL (`CREATE TABLE`) para criação do banco de dados.
 
-A sintaxe é simples e declarativa, agora em português:
+## 📂 Estrutura do Projeto
 
-```dsl
-formulario NomeDoFormulario {
-    campo nome_campo: tipo(min, max) flags
-}
-```
-
-### Tipos Suportados
-
-| Tipo | Descrição | Parâmetros `(min, max)` |
-|------|-----------|-------------------------|
-| `texto` | Texto curto | Comprimento min/max |
-| `textolongo` | Texto longo | - |
-| `inteiro` | Número inteiro | Valor min/max |
-| `decimal` | Número decimal | Valor min/max |
-| `email` | E-mail válido | - |
-| `booleano` | Verdadeiro/Falso | - |
-| `data` | Data | - |
-
-### Flags
-
-- `obrigatorio`: Torna o campo obrigatório
-- `unico`: Cria índice único no banco de dados (SQL)
-
-## 💡 Exemplo Completo
-
-```dsl
-formulario Usuario {
-    campo nome: texto(3, 100) obrigatorio
-    campo email: email unico obrigatorio
-    campo idade: inteiro(18, 120)
-    campo ativo: booleano obrigatorio
-}
-
-formulario Produto {
-    campo nome: texto(3, 200) obrigatorio
-    campo preco: decimal(0, 99999) obrigatorio
-}
-```
-
-## 📂 Estrutura do Projeto e Explicação do Código
-
-O projeto é modular, separado em responsabilidades específicas:
-
-### 1. `main.py` (Orquestrador)
-É o ponto de entrada da aplicação.
-- **Função**: Lê o arquivo `.dsl`, chama o parser e distribui os dados para os geradores.
-- **Fluxo**:
-    1. Carrega o arquivo `.dsl`.
-    2. Usa `dsl_parser.py` para converter o texto em objetos Python.
-    3. Gera SQL usando `sql_generator.py`.
-    4. Gera JavaScript usando `js_generator.py`.
-
-### 2. `dsl_parser.py` (Interpretador)
-Responsável por ler a sintaxe da DSL e transformá-la em estrutura de dados.
-- **Tecnologia**: Usa **ANTLR** para análise léxica e sintática.
-- **Classe `Field`**: Uma `dataclass` que armazena metadados de cada campo (nome, tipo, validações).
-- **Funcionamento**:
-    - Usa a gramática definida em `Formularios.g4`.
-    - Percorre a árvore sintática gerada pelo ANTLR usando um `Listener`.
-    - Extrai definições de `campo` e seus parâmetros.
-
-### 3. `sql_generator.py` (Gerador de Banco de Dados)
-Converte as definições da DSL em comandos DDL (Data Definition Language) para MySQL/MariaDB.
-- **Mapeamento**: Converte tipos da DSL para tipos SQL (ex: `texto` -> `VARCHAR`, `inteiro` -> `INT`).
-- **Automação**: Adiciona automaticamente:
-    - `id`: Chave primária auto-incremento.
-    - `created_at` e `updated_at`: Timestamps para auditoria.
-    - `UNIQUE KEY`: Para campos marcados com a flag `unico`.
-
-### 4. `js_generator.py` (Frontend)
-Gera código para o navegador (Client-side).
-- **Validação JS**: Cria funções `validateNomeFormulario(data)` que retornam `{ valid: boolean, errors: [] }`.
-    - Implementa as mesmas regras de validação do Python (tamanho, tipo, regex de email).
+```text
+.
+├── main.py                # Ponto de entrada (Entry point) do compilador
+├── requirements.txt       # Dependências do Python
+├── grammar/               
+│   └── Formularios.g4     # Arquivo da gramática ANTLR4
+├── input/                 # Coloque seus arquivos .dsl aqui
+├── output/                # Os arquivos .js e .sql gerados aparecerão aqui
+└── src/
+    ├── dsl_parser.py      # Lógica de parsing e transformação (Listener)
+    ├── sql_generator.py   # Gerador de código SQL
+    ├── js_generator.py    # Gerador de código JavaScript
+    └── antlr_generated/   # Classes geradas automaticamente pelo ANTLR
